@@ -31,75 +31,30 @@ public class Main
     {
         readFile("./TextData/Monaldo/Fjsp/Job_Data/Barnes/Text/mt10c1.fjs");
         //readFile("test.fjs");
+
+        // Intialisation de la population
         selectMachine();
-
-        for (Job j : jobs){
-            System.out.println(j);
-        }
-
-        System.out.println("NbMachines "+ nMachines);
-        for (Integer i : machines){
-            System.out.println(i);
-        }
-
         MApopulation.add(buildMA());
-
         solveconflict();
-
         OSpopulation.add(buildOS());
-        OSpopulation.add(buildOS());
-
-
-        System.out.println("Operation Selection 0 : ");
-        for(Integer i : OSpopulation.get(0)){
-            System.out.print(i);
-            System.out.print("|");
+        nbPopulationInitiale = (nTasks*nTasks)/2;
+        maxPopulation = nbPopulationInitiale + nbPopulationInitiale/2 ;
+        for(int i = 0 ; i < nbPopulationInitiale - 1; i++){
+            mutation(0);
         }
-        System.out.println();
-        System.out.println("Machine Assignement : ");
-
-        for(Integer i : MApopulation.get(0)){
-            System.out.print(i);
-            System.out.print("|");
+        long currentTime = System.currentTimeMillis();
+        long finalTime = currentTime + 120000 ;
+        while(currentTime < finalTime) {
+            population_selection = select();
+            if (Math.floorMod(currentTime,143) == 0) {
+                //System.out.println("Mutation, currentTime is " + currentTime);
+                mutation(population_selection[1]);
+            }
+            crossover(population_selection[0], population_selection[1]);
+            currentTime = System.currentTimeMillis();
         }
-
-        System.out.println();
-
-        //OSpopulation.add(OS);
-        for (int j=0;j<OSpopulation.size();j++)
-        {
-            System.out.println(Arrays.toString(OSpopulation.get(j))+"\n");
-        }
-        mutation(0);
-        // Selection population
-        //population_selection=select();
-       // function mutation
-        mutation(population_selection[0]);
-        // crossover operation
-        crossover(population_selection[0],population_selection[1]);
         population_selection = select();
-
-        //System.out.println("the time final "+fitness(OSpopulation.get(1) , MApopulation.get(0)));
-     /*   System.out.println("Operation Selection 1 : ");
-        for(Integer i : OSpopulation.get(1)){
-            System.out.print(i);
-            System.out.print("|");
-        }
-        System.out.println();
-    */
-
-
-
-
-     /*   System.out.println("Operation Selection 2 : ");
-        for(Integer i : OSpopulation.get(2)){
-            System.out.print(i);
-            System.out.print("|");
-        }
-        System.out.println();
-    */
-
-
+        System.out.println("Solution : \nOS " + Arrays.toString(OSpopulation.get(population_selection[0])) + "\nMA " + Arrays.toString(MApopulation.get(0)) + "\nFitness " + fitness(OSpopulation.get(population_selection[0]),MApopulation.get(0)));
 
 
     }
@@ -116,14 +71,15 @@ public class Main
         int index2 ;
         // TODO mutation on MA change if(true) to if con
         if (true) {  //working on OS with
-            index1=(int)(Math.random()*nTasks);
-            index2=(int)(Math.random()*nTasks);
+            index1=(int)(Math.floor(Math.random()*nTasks));
+            index2=(int)(Math.floor(Math.random()*nTasks));
 
             OSM= Arrays.copyOfRange(OSpopulation.get(sp),0,nTasks);
             Integer x= OSM[index1];
             OSM[index1]=OSM[index2];
             OSM[index2]=x;
             OSpopulation.add(OSM);
+            //System.out.println(Arrays.toString(OSM) + " index1 " + index1 + " index2 " + index2);
 
         }
 
@@ -144,43 +100,50 @@ public class Main
                 }
             }
         }
-        System.out.println("OSM " + Arrays.toString(OSM)+ "\n index switch " + index1 + " "  +index2);
+        //System.out.println("OSM " + Arrays.toString(OSM)+ "\n index switch " + index1 + " "  +index2);
 
     }                          // sp stand for select population
     public static void crossover(int sp1,int sp2) {
         int length=OSpopulation.size();
         int index1,index2;
+        boolean crossOK = false ;
         Integer[] OSM1,OSM2,OSM3;  //pop 1
 
 
         if(sp1 > length || sp2 >length )
         {System.out.println(" vous avez depassé la taille");}
-        else
-            {
+        else {
 
             OSM1 = OSpopulation.get(sp1);
             OSM2 = OSpopulation.get(sp2);
-            OSM3=new Integer[OSM1.length];
+            OSM3 = new Integer[OSM1.length];
+            while(!crossOK){
+                index1 = (int) (Math.random() * nTasks);
 
-            index1=(int)(Math.random()*nTasks);
+                for (int i = 0; i < nTasks; i++) {
 
-            for(int i=0;i< nTasks;i++)
-            {
+                    if (i < index1)
+                        OSM3[i] = OSM1[i];
+                    else
+                        OSM3[i] = OSM2[i];
 
-                if(i<index1)
-                    OSM3[i]=OSM1[i];
-                else
-                    OSM3[i]=OSM2[i];
-
+                }
+                try {
+                    fitness(OSM3, MApopulation.get(0));
+                    crossOK = true;
+                } catch (java.lang.ArrayIndexOutOfBoundsException e) {
+                //    System.out.println("Crossover Failed");
+                    crossOK = false;
+                }
             }
             OSpopulation.add(OSM3);
 
-        System.out.println("POPULATION 1 "+Arrays.toString(OSM1)+"\n"+"POPULATION 2 "+ Arrays.toString(OSM2)+"\n"+"population final"+Arrays.toString(OSM3)+"\n");
+        //System.out.println("POPULATION 1 "+Arrays.toString(OSM1)+"\n"+"POPULATION 2 "+ Arrays.toString(OSM2)+"\n"+"population final"+Arrays.toString(OSM3)+"\n");
 
 
             for (int j=0;j<OSpopulation.size();j++)
             {
-              System.out.println(Arrays.toString(OSpopulation.get(j))+"\n");
+              //System.out.println(Arrays.toString(OSpopulation.get(j))+"\n");
             }
             }
     }
@@ -199,6 +162,7 @@ public class Main
 
 
         for (int i=0;i< OSpopulation.size();i++) {
+            //System.out.println("i select " + i + "\n OS " + Arrays.toString(OSpopulation.get(i)));
             fitness_OS[i] = fitness(OSpopulation.get(i), MApopulation.get(0));
             if (fitness_OS[i] > max ){
                 indexMax = i ;
@@ -214,13 +178,17 @@ public class Main
                 min2 = fitness_OS[i];
             }
         }
+        OSpopulation.remove(indexMax);
+        if(indexMax< indexMin1)
+            indexMin1 -= 1 ;
+        if(indexMax< indexMin2)
+            indexMin2 -= 1 ;
+        //MApopulation.remove(indexMax);
+        //System.out.println("test fitness Array : " + Arrays.toString(fitness_OS));
+        //System.out.println("test min " + indexMin1 + " "  + indexMin2 + " max " + indexMax);
         int res[] = new int[2];
         res[0] = indexMin1 ;
         res[1] = indexMin2 ;
-        OSpopulation.remove(indexMax);
-        //MApopulation.remove(indexMax);
-        System.out.println("test fitness Array : " + Arrays.toString(fitness_OS));
-        System.out.println("test min " + indexMin1 + " "  + indexMin2 + " max " + indexMax);
         return res ;
     }
     public static void readFile(String name) {
@@ -379,6 +347,7 @@ public class Main
     public static int fitness(Integer OS[] , Integer MA[]){     //fitnesse function
         int machineEndTime[] = new int[nMachines];
         int jobsEndTime[] = new int[nJobs];
+        //
         int jobsN[] = new int[nJobs];
         ArrayList<Integer[]> jobsM = new ArrayList<>();
         int index = 0 ;
@@ -392,13 +361,13 @@ public class Main
             int time = currentTask.getSelectedProcess()[1];
             int max = jobsEndTime[i-1] ;
             if(machineEndTime[currentMachine-1]> jobsEndTime[i-1]){
-                max = machineEndTime[currentMachine];
+                max = machineEndTime[currentMachine-1];
             }
             machineEndTime[currentMachine-1] = max + time ;
             jobsEndTime[i-1] = max + time ;
             jobsN[i-1]++;
         }
-        System.out.println("Machine End time " + Arrays.toString(machineEndTime) + " jobs end time " + Arrays.toString(jobsEndTime));
+        //System.out.println("Machine End time " + Arrays.toString(machineEndTime) + " jobs end time " + Arrays.toString(jobsEndTime));
         Arrays.sort(jobsEndTime);
         Arrays.sort(machineEndTime);
         if(jobsEndTime[nJobs-1] == machineEndTime[nMachines-1])
