@@ -1,0 +1,11 @@
+-> Le projet a été réalisé sous intelliJ
+
+-> Pour choisir le fichier de test, il faut mettre son chemin relatif à la racine du projet en paramètre de la fonction readFile (début du main)
+
+-> Pour choisir la durée du timer, il faut changer la constante dans la variable finalTime (juste avant la boucle while)
+
+-> La classe BarChartDemo manipule les solutions générés par l'algorithme (Histogramme).
+
+-> La variable smaple_nummber permet de modifier le nombre d'exécution de l'algorithme génétique lors du lancement du programme.
+
+-> Le programme se lance via la classe Main

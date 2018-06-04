@@ -2,15 +2,21 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class Main
-{
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+
+import org.jfree.ui.RefineryUtilities;
+
+public class Main {
 
     private static Integer nJobs  = 0;
     private static Integer nMachines  = 0;
     private static Integer nTasks  = 0;
     private static Integer avgMachinesperJob;
     private static Integer machinesTime[];
-    public static Integer machines[] ;
+    public static Integer machines[];
+    public static final  int smaple_nummber=10;   //nummber of smaple
+    public static int sample_array[] =new int[smaple_nummber];
     public static Integer nbMaxTasksperJob = 0;
     private static Integer maxPopulation = 0;
     private static Integer nbPopulationInitiale = 0 ;
@@ -21,43 +27,93 @@ public class Main
     protected static ArrayList<Integer[]> OSpopulation = new ArrayList<>();                        // list P elements de OS
     protected static ArrayList<Integer[]> MApopulation = new ArrayList<>();                        // list P elements de OS
     private static int [] population_selection= new int[2];
-
-
+   // private static   ArrayList<Integer[]> sample = new ArrayList<>();
     // list P elements de MA
     //private static Integer MA[];
     private static Integer timeResult = 0;
 
     public static void main(String[] args)
+
+
     {
-        readFile("./TextData/Monaldo/Fjsp/Job_Data/Barnes/Text/mt10c1.fjs");
+
+
+
+            readFile("./TextData/Monaldo/Fjsp/Job_Data/Barnes/Text/mt10c1.fjs");
         //readFile("test.fjs");
 
-        // Intialisation de la population
+        for (int sample_counter = 0; sample_counter <smaple_nummber; sample_counter++) {   // To generate 15 sample for the result
+
+            MApopulation.clear();
+            OSpopulation.clear();
+
+            // Intialisation de la population
         selectMachine();
         MApopulation.add(buildMA());
         solveconflict();
         OSpopulation.add(buildOS());
-        nbPopulationInitiale = (nTasks*nTasks)/2;
-        maxPopulation = nbPopulationInitiale + nbPopulationInitiale/2 ;
-        for(int i = 0 ; i < nbPopulationInitiale - 1; i++){
-            mutation(0);
-        }
-        long currentTime = System.currentTimeMillis();
-        long finalTime = currentTime + 120000 ;
-        while(currentTime < finalTime) {
-            population_selection = select();
-            if (Math.floorMod(currentTime,143) == 0) {
-                //System.out.println("Mutation, currentTime is " + currentTime);
-                mutation(population_selection[1]);
+
+        nbPopulationInitiale = (nTasks * nTasks) / 2;
+        maxPopulation = nbPopulationInitiale + nbPopulationInitiale / 2;
+
+            for (int i = 0; i < nbPopulationInitiale - 1; i++) {
+                mutation(0);
             }
-            crossover(population_selection[0], population_selection[1]);
-            currentTime = System.currentTimeMillis();
+            long currentTime = System.currentTimeMillis();
+            long finalTime = currentTime + 12000;
+            while (currentTime < finalTime) {
+                population_selection = select();
+                if (Math.floorMod(currentTime, 143) == 0) {
+                    //System.out.println("Mutation, currentTime is " + currentTime);
+                    mutation(population_selection[1]);
+                }
+                crossover(population_selection[0], population_selection[1]);
+                currentTime = System.currentTimeMillis();
+            }
+            population_selection = select();
+        //    System.out.println("Solution : "+ sample_counter + "\nOS " + Arrays.toString(OSpopulation.get(population_selection[0])) + "\nMA " + Arrays.toString(MApopulation.get(0)) + "\nFitness " + fitness(OSpopulation.get(population_selection[0]), MApopulation.get(0)));
+
+            sample_array[sample_counter] = fitness(OSpopulation.get(population_selection[0]), MApopulation.get(0)); // store the result in array
         }
-        population_selection = select();
-        System.out.println("Solution : \nOS " + Arrays.toString(OSpopulation.get(population_selection[0])) + "\nMA " + Arrays.toString(MApopulation.get(0)) + "\nFitness " + fitness(OSpopulation.get(population_selection[0]),MApopulation.get(0)));
+
+
+        BarChartDemo demo = new BarChartDemo("JFreeChart: BarChartDemo1.java",sample_array, smaple_nummber);
+        demo.pack();
+        RefineryUtilities.centerFrameOnScreen(demo);
+        demo.setVisible(true);
 
 
     }
+
+
+    public static void whenWriteStringUsingBufferedWritter_thenCorrect() throws IOException {
+
+
+        String FILENAME = "d:\\e.txt";
+        BufferedWriter bw = null;
+        FileWriter fw = null;
+        String content = "This is the content to write into file\n";
+
+        try {
+            fw = new FileWriter(FILENAME);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        bw = new BufferedWriter(fw);
+            bw.write(content);
+
+
+
+    }
+
+
+
+
+
+
+
+
+
 
 
 
